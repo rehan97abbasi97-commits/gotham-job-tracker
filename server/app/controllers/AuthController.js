@@ -46,11 +46,29 @@ const register = async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Register error:", error.message);
+        if (error.name === "ValidationError") {
+            const message = Object.values(error.errors)
+                .map(err => err.message)
+                .join(", ");
+
+            return res.status(400).json({
+                success: false,
+                message
+            });
+        }
+
+        if (error.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                message: "Email already exists!"
+            });
+        }
+
+        console.error("Register error:", error);
 
         return res.status(500).json({
             success: false,
-            message: "Internal server error",
+            message: "Internal server error"
         });
     }
 };
@@ -116,13 +134,13 @@ const login = async (req, res) => {
 };
 
 const getProfile = (req, res) => {
-  return res.status(200).json({
-    success: true,
-    message: "Protected route accessed successfully!",
-    user: {
-      userId: req.user.userId,
-    },
-  });
+    return res.status(200).json({
+        success: true,
+        message: "Protected route accessed successfully!",
+        user: {
+            userId: req.user.userId,
+        },
+    });
 };
 
 module.exports = { register, login, getProfile };
