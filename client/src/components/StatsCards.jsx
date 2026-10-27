@@ -5,11 +5,13 @@ import {
     Trophy,
     XCircle,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getAllJobs } from "../services/jobService";
 
-const stats = [
+const createStats = (applications) => [
     {
         label: "Total Applications",
-        value: "24",
+        value: applications.length,
         change: "All tracked applications",
         icon: BriefcaseBusiness,
         color: "text-[#F2C94C]",
@@ -17,7 +19,7 @@ const stats = [
     },
     {
         label: "Interviews",
-        value: "06",
+        value: applications.filter((app) => app.status === "Interview").length,
         change: "Opportunities in progress",
         icon: CalendarCheck,
         color: "text-sky-400",
@@ -25,7 +27,7 @@ const stats = [
     },
     {
         label: "Offers",
-        value: "02",
+        value: applications.filter((app) => app.status === "Offer").length,
         change: "Offers received",
         icon: Trophy,
         color: "text-emerald-400",
@@ -33,7 +35,7 @@ const stats = [
     },
     {
         label: "Rejected",
-        value: "04",
+        value: applications.filter((app) => app.status === "Rejected").length,
         change: "Applications declined",
         icon: XCircle,
         color: "text-rose-400",
@@ -42,6 +44,21 @@ const stats = [
 ];
 
 function StatsCards() {
+    const [applications, setApplications] = useState([]);
+
+    useEffect(() => {
+        const fetchApplications = async () => {
+            try {
+                const data = await getAllJobs();
+                setApplications(data.jobs || []);
+            } catch (error) {
+                console.error("Failed to fetch application stats:", error);
+            }
+        };
+
+        fetchApplications();
+    }, []);
+    const stats = createStats(applications);
     return (
         <section className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
             {stats.map((stat) => {
